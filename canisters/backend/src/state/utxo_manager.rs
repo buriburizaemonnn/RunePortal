@@ -91,3 +91,25 @@ impl Default for UtxoManager {
         }
     }
 }
+
+impl UtxoManager {
+    pub fn record_bitcoin_utxos(&mut self, addr: &str, utxos: Vec<Utxo>) {}
+
+    pub fn record_runic_utxos(&mut self, addr: &str, runeid: RuneId, utxos: Vec<RunicUtxo>) {}
+
+    pub fn get_bitcoin_utxo(&mut self, addr: &str) -> Option<Utxo> {
+        todo!()
+    }
+
+    pub fn get_runic_utxo(&mut self, addr: &str, runeid: RuneId) -> Option<RunicUtxo> {
+        todo!()
+    }
+
+    pub fn get_bitcoin_balance(&self, addr: &str) -> u64 {
+        todo!()
+    }
+
+    pub fn get_runic_balance(&self, addr: &str, runeid: &RuneId) -> u128 {
+        todo!()
+    }
+}

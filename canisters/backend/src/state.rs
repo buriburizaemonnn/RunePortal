@@ -5,6 +5,7 @@ use ic_stable_structures::{memory_manager::MemoryManager, DefaultMemoryImpl};
 use utxo_manager::UtxoManager;
 
 pub mod config;
+pub mod launch_manager;
 pub mod utxo_manager;
 
 thread_local! {

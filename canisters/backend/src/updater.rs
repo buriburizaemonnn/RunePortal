@@ -19,3 +19,5 @@ impl Storable for RuneId {
 
     const BOUND: Bound = Bound::Unbounded;
 }
+
+mod ord_canister {}

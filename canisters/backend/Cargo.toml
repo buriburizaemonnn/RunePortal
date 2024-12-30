@@ -4,3 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ic-cdk.workspace = true
+candid.workspace = true
+ic-stable-structures.workspace = true
+icrc-ledger-types.workspace = true
+ic-ledger-types.workspace = true
+
+serde.workspace = true

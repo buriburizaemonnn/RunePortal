@@ -3,11 +3,23 @@ name = "backend"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = [ "cdylib" ]
+
 [dependencies]
 ic-cdk.workspace = true
 candid.workspace = true
 ic-stable-structures.workspace = true
 icrc-ledger-types.workspace = true
 ic-ledger-types.workspace = true
-
+ic-cdk-timers.workspace = true
+ic-crypto-secp256k1.workspace = true
 serde.workspace = true
+serde_bytes.workspace = true
+bitcoin.workspace = true
+ordinals.workspace = true
+ripemd.workspace = true
+tiny-keccak.workspace = true
+sha2.workspace = true
+getrandom.workspace = true
+bs58.workspace = true

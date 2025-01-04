@@ -1,6 +1,10 @@
-use crate::{memory::MemoryIds, EcdsaPublicKey, Memory};
+use crate::{memory::MemoryIds, EcdsaPublicKey, Memory, SchnorrPublicKey};
 use candid::{CandidType, Decode, Encode, Principal};
-use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
+use ic_cdk::api::management_canister::{
+    bitcoin::BitcoinNetwork,
+    ecdsa::{EcdsaCurve, EcdsaKeyId},
+    schnorr::{SchnorrAlgorithm, SchnorrKeyId},
+};
 use ic_stable_structures::{storable::Bound, StableCell, Storable};
 use serde::Deserialize;
 
@@ -11,6 +15,7 @@ pub struct Config {
     pub auth: Option<Principal>,
     pub bitcoin_network: Option<BitcoinNetwork>,
     pub ecdsa_public_key: Option<EcdsaPublicKey>,
+    pub schnorr_public_key: Option<SchnorrPublicKey>,
     pub keyname: Option<String>,
 }
 
@@ -24,6 +29,55 @@ impl Storable for Config {
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Config {
+    pub fn bitcoin_network(&self) -> BitcoinNetwork {
+        match self.bitcoin_network {
+            None => ic_cdk::trap("canister's config uninitialized"),
+            Some(network) => network,
+        }
+    }
+
+    pub fn ecdsa_public_key(&self) -> EcdsaPublicKey {
+        if let Some(ref public_key) = self.ecdsa_public_key {
+            public_key.clone()
+        } else {
+            ic_cdk::trap("canister's config uninitialized")
+        }
+    }
+
+    pub fn schnorr_public_key(&self) -> SchnorrPublicKey {
+        if let Some(ref public_key) = self.schnorr_public_key {
+            public_key.clone()
+        } else {
+            ic_cdk::trap("canister's config uninitialized")
+        }
+    }
+
+    pub fn keyname(&self) -> String {
+        if let Some(ref keyname) = self.keyname {
+            keyname.clone()
+        } else {
+            ic_cdk::trap("canister's config uninitialized")
+        }
+    }
+
+    pub fn ecdsakeyid(&self) -> EcdsaKeyId {
+        let name = self.keyname();
+        EcdsaKeyId {
+            name,
+            curve: EcdsaCurve::Secp256k1,
+        }
+    }
+
+    pub fn schnorrkeyid(&self) -> SchnorrKeyId {
+        let name = self.keyname();
+        SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Bip340secp256k1,
+            name,
+        }
+    }
 }
 
 pub type StableConfig = StableCell<Config, Memory>;

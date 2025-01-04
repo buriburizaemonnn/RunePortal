@@ -1,0 +1,28 @@
+type BitcoinNetwork = variant { mainnet; regtest; testnet };
+type InitArgs = record {
+  commission_receiver : opt principal;
+  auth : opt principal;
+  bitcoin_network : BitcoinNetwork;
+};
+type StartLaunchArgs = record {
+  x : opt text;
+  fee_per_vbytes : opt nat64;
+  duration : nat8;
+  turbo : bool;
+  starts_in : nat8;
+  logo : opt blob;
+  content_type : opt blob;
+  divisibility : nat8;
+  hard_cap : nat64;
+  website : opt text;
+  price_per_token : nat64;
+  soft_cap : nat64;
+  raise_in : TokenType;
+  runename : text;
+  telegram : opt text;
+  total_supply : nat;
+  symbol : opt nat32;
+  openchat : opt text;
+};
+type TokenType = variant { Bitcoin };
+service : (InitArgs) -> { start_launch : (StartLaunchArgs) -> () }

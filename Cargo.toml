@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["canisters/backend"]
+members = ["canisters/backend", "btc-rpc-proxy"]
 
 [workspace.dependencies]
 

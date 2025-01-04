@@ -1,0 +1,15 @@
+mode: separate-outputs
+
+etching:
+  rune: INTERNET.COMPUTER
+  symbol: "A"
+  divisibility: 1
+  premine: 2002000
+  supply: 12002000
+  terms:
+    cap: 10000000
+    amount: 1
+  turbo: true
+
+inscriptions:
+  - file: /data/ic_logo.png

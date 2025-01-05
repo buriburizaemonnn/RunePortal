@@ -3,6 +3,8 @@ use ic_ledger_types::AccountIdentifier;
 use icrc_ledger_types::icrc1::account::Account;
 use tiny_keccak::{Hasher, Sha3};
 
+use crate::chain::btc::account_to_p2pkh_address;
+
 #[derive(CandidType)]
 pub struct Addresses {
     pub icrc1: Account,
@@ -21,7 +23,7 @@ impl From<[u8; 32]> for Addresses {
             owner: id,
             subaccount: Some(subaccount),
         };
-        let bitcoin = "".to_string(); // account_to_p2pkh_address(&account);
+        let bitcoin = account_to_p2pkh_address(&account);
         Addresses {
             icrc1: account,
             icrc1_string: account.to_string(),

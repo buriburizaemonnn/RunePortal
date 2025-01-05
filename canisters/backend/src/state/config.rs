@@ -13,6 +13,7 @@ use super::read_memory_manager;
 #[derive(CandidType, Deserialize, Default, Clone)]
 pub struct Config {
     pub auth: Option<Principal>,
+    pub commission_receiver: Option<Principal>,
     pub bitcoin_network: Option<BitcoinNetwork>,
     pub ecdsa_public_key: Option<EcdsaPublicKey>,
     pub schnorr_public_key: Option<SchnorrPublicKey>,
@@ -36,6 +37,12 @@ impl Config {
         match self.bitcoin_network {
             None => ic_cdk::trap("canister's config uninitialized"),
             Some(network) => network,
+        }
+    }
+    pub fn commission_receiver(&self) -> Principal {
+        match self.commission_receiver {
+            None => ic_cdk::id(),
+            Some(cr) => cr,
         }
     }
 
@@ -76,6 +83,13 @@ impl Config {
         SchnorrKeyId {
             algorithm: SchnorrAlgorithm::Bip340secp256k1,
             name,
+        }
+    }
+
+    pub fn get_timer_for_txn_submission(&self) -> u64 {
+        match self.bitcoin_network() {
+            BitcoinNetwork::Regtest => 60,
+            _ => 60 * 60,
         }
     }
 }

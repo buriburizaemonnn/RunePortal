@@ -1,6 +1,7 @@
 mod decimal;
 pub mod etch;
 mod inscription;
+pub mod transfer;
 
 use std::str::FromStr;
 

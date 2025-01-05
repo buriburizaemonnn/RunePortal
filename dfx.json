@@ -11,6 +11,11 @@
       "type": "custom",
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
     },
+    "ord_indexer": {
+      "type": "rust",
+      "package": "ord_canister",
+      "candid": "canisters/ord_canister/ord_indexer.did"
+    },
     "backend": {
       "package": "backend",
       "type": "rust",

@@ -23,3 +23,6 @@ tiny-keccak.workspace = true
 sha2.workspace = true
 getrandom.workspace = true
 bs58.workspace = true
+slotmap.workspace = true
+ciborium.workspace = true
+hex.workspace = true

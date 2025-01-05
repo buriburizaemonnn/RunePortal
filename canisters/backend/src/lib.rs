@@ -6,7 +6,7 @@ mod token_type;
 mod txn_handler;
 mod updater;
 
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 use addresses::Addresses;
 use candid::{CandidType, Principal};
@@ -29,8 +29,10 @@ use ic_cdk::{
 };
 use memory::Memory;
 use serde::Deserialize;
-use state::{read_config, write_config};
+use state::{read_config, read_utxo_manager, write_config};
 use token_type::TokenType;
+use txn_handler::SubmittedTxidType;
+use updater::TargetType;
 
 async fn lazy_ecdsa_schnorr_setup() {
     let (ecdsakeyid, schnorrkeyid) =
@@ -76,6 +78,7 @@ pub fn init(
 ) {
     let caller = ic_cdk::caller();
     let auth = auth.unwrap_or(caller);
+    let commission_receiver = commission_receiver.unwrap_or(caller);
     let keyname = match bitcoin_network {
         BitcoinNetwork::Mainnet => "key_1".to_string(),
         BitcoinNetwork::Testnet => "test_key_1".to_string(),
@@ -86,6 +89,7 @@ pub fn init(
         temp.keyname.replace(keyname);
         temp.auth.replace(auth);
         temp.bitcoin_network.replace(bitcoin_network);
+        temp.commission_receiver.replace(commission_receiver);
         config.set(temp).expect("failed to set config");
     });
     ic_cdk_timers::set_timer(Duration::from_secs(0), || {
@@ -98,6 +102,35 @@ pub fn pre_upgrade() {}
 
 #[post_upgrade]
 pub fn post_upgrade() {}
+
+#[query]
+pub fn get_bitcoin_deposit_address() -> String {
+    let caller = ic_cdk::caller();
+    Addresses::from(&caller).bitcoin
+}
+
+#[update]
+pub async fn get_balances() -> HashMap<TokenType, u128> {
+    let caller = ic_cdk::caller();
+    let caller_addresses = Addresses::from(&caller);
+
+    updater::fetch_utxos_and_update(
+        &caller_addresses.bitcoin,
+        TargetType::Bitcoin { target: u64::MAX },
+    )
+    .await;
+
+    read_utxo_manager(|manager| {
+        let mut balances = HashMap::new();
+        let bitcoin_balance = manager.get_bitcoin_balance(&caller_addresses.bitcoin);
+        let runes = manager.all_rune_with_balances(&caller_addresses.bitcoin);
+        balances.insert(TokenType::Bitcoin, bitcoin_balance as u128);
+        for (id, balance) in runes {
+            balances.insert(TokenType::Rune(id), balance);
+        }
+        balances
+    })
+}
 
 pub fn user_detail() {}
 
@@ -120,7 +153,7 @@ pub struct StartLaunchArgs {
     pub soft_cap: u64,
     pub starts_in: u8, // should be in days
     pub duration: u8,  // should be in days
-    pub raise_in: TokenType,
+    // pub raise_in: TokenType,
     pub price_per_token: u64,
     pub fee_per_vbytes: Option<u64>,
 }
@@ -143,13 +176,20 @@ pub async fn start_launch(
         soft_cap,
         starts_in,
         duration,
-        raise_in,
+        // raise_in,
         price_per_token,
         fee_per_vbytes,
     }: StartLaunchArgs,
-) {
+) -> (String, String) {
     let caller = ic_cdk::caller();
     let caller_addresses = Addresses::from(&caller);
+
+    // NOTE: updates all the utxos for now, this might be inefficient
+    updater::fetch_utxos_and_update(
+        &caller_addresses.bitcoin,
+        TargetType::Bitcoin { target: u64::MAX },
+    )
+    .await;
     let caller_address = address_validation(&caller_addresses.bitcoin).unwrap();
     let (spaced_rune, total_supply, symbol) =
         match validate_etching(&runename, symbol, divisibility, total_supply) {
@@ -168,9 +208,18 @@ pub async fn start_launch(
         fee_payer: caller_address.clone(),
         fee_payer_account: caller_addresses.icrc1,
         turbo,
-        postage: None,
         fee_per_vbytes,
     };
+    let (txn, (commit, reveal)) = chain::btc::runestone::etch::etch(arg).await.unwrap();
+    let txid = txn.submit().await;
+    if txid
+        != (SubmittedTxidType::Bitcoin {
+            txid: commit.clone(),
+        })
+    {
+        ic_cdk::println!("doesn't equal")
+    }
+    (commit, reveal)
 }
 
 pub fn participate() {}

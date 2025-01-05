@@ -9,6 +9,7 @@ pub enum MemoryIds {
     Config,
     Runic,
     Bitcoin,
+    Queue,
 }
 
 impl From<MemoryIds> for MemoryId {
@@ -17,6 +18,7 @@ impl From<MemoryIds> for MemoryId {
             MemoryIds::Config => 1,
             MemoryIds::Runic => 2,
             MemoryIds::Bitcoin => 3,
+            MemoryIds::Queue => 4,
         };
         MemoryId::new(id)
     }
